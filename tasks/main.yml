@@ -1,0 +1,12 @@
+---
+# tasks file for rhel-6-els
+
+- name: retrieve the rhel 6 ami for the current region
+  community.aws.ec2_ami_info:
+    region: "{{ aws_inject.repo }}"
+    aws_access_key: "{{ aws_inject.aws_access_key | default(omit) }}"
+    aws_secret_key: "{{ aws_inject.aws_secret_key | default(omit) }}"
+      filters:
+        product-code: "{{ aws_inject.rhel6els.product-code }}"
+        product-code-type: "{{ aws_inject.rhel6els.product-code-type | default('marketplace') }}"
+  register: aws_inject.rhel6els.regional_amis
