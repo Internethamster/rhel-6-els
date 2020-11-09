@@ -1,2 +1,25 @@
 ---
 # handlers file for rhel-6-els
+- name: set the instance id as a fact
+  debug:
+    msg: "set the instance id as a fact"
+- notify: set the root_volume as a fact
+  debug:
+    msg: "set the root_volume as a fact"
+- notify: Attach target vol to surrogate
+  debug:
+    msg: "-*- TODO -*- Attach target vol to surrogate"
+
+- notify: create snapshot 2 from donor root volume
+  debug:
+    msg: "-*- TODO -*- create snapshot 2 from donor root volume"
+
+- notify: detach the volumes from the surrogate
+  debug:
+    msg: "-*- TODO -*- detach the volumes from the surrogate"
+- notify: register an image from the target instance
+  debug:
+    msg: "-*- TODO -*- register an image from the target instance"
+- notify: Create Image from donor instance (no waiting)
+  debug:
+    msg: "-*- TODO -*- Create Image from donor instance (no waiting)"
