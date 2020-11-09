@@ -1,2 +1,13 @@
 ---
-# vars file for rhel-6-els
+rhel6_instance_tag_name: migration_task_els
+rhel6_instance_tag_value: donor
+rhel6_els_instance_tag_name: migration_task_els
+rhel6_els_instance_tag_value: target
+
+aws_inject:
+  region: "us-east-1"
+  # aws_access_key undefined
+  # aws_secret_key undefined
+  rhel6els:
+    product-code-type: marketplace
+    product-code: cacc3780-8160-445b-b4c6-0268ea0a74d1
