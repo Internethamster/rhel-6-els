@@ -1,0 +1,10 @@
+- name: Register the RHEL-6-ELS image ID
+  community.aws.ec2_ami_info:
+    region: "{{ aws_inject.region }}"
+    owners: aws-marketplace
+    profile: "{{ aws_inject.profile | default('default', true) }}"
+    filters:
+      product-code: 6gwjkbtes2r183vs6s32ffs2b
+      product-code.type: marketplace
+    
+    

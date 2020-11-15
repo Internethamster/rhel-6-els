@@ -1,8 +1,10 @@
 ---
 # tasks file for rhel-6-els
+- import_tasks: marketplace_amis.yml
+
 - name: retrieve the rhel-6-els ami for the current region
   community.aws.ec2_ami_info:
-    region: "{{ aws_inject.repo }}"
+    region: "{{ aws_inject.region }}"
     aws_access_key: "{{ aws_inject.aws_access_key | default(omit) }}"
     aws_secret_key: "{{ aws_inject.aws_secret_key | default(omit) }}"
       filters:
@@ -11,8 +13,7 @@
   register: aws_inject.rhel6els.regional_amis
   
 - name: Create snapshot 1 of the donor instance
-  debug:
-    msg "-*- TODO -*- wait: true"
+  import_tasks: snapshot_1.yml
 - name: enumerate the extra volumes attached to the instance
   debug:
     msg: "-*- TODO -*- enumerate the extra volumes attached to the instance"
@@ -32,7 +33,7 @@
 - name: Detach the target instance root volume
   debug:
     msg: "-*- TODO -*-  Detach the target instance root volume"
-  notify: -*- TODO -*- Attach target vol to surrogate
+  notify: Attach target vol to surrogate
 - name: Create donor volume 1 from snapshot 1
   debug:
     msg: "-*- TODO -*-  Create donor volume 1 from snapshot 1"
