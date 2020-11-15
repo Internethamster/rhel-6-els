@@ -1,11 +1,13 @@
 Role Name
 =========
 
-This role allow user to convert the root volume of an on-demand RHEL 6 instance to a Marketplace instance of the On-demand RHEL 6 with Extended Lifecycle Support. 
+This role allows the user to convert the root volume of an on-demand RHEL 6 instance to a Marketplace instance of the On-demand RHEL 6 with Extended Lifecycle Support. 
 
 As of now, the role supportes converting instances built from AMIs that are backed by official RHEL 6 AMIs provided by Red Hat, so the instance from which the conversion must have the following: 
  - a valid RunInstance:0010 code identifying that it is derivative of the official AMI. 
- - access to the external network for access to the RHEL 6 ELS updates. 
+ - access to the external network for access to the RHEL 6 ELS updates.
+ 
+There are many ways to approach making a move from one instance to another. The instances built on the 
  
 
 Requirements
