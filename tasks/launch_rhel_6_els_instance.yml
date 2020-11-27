@@ -1,0 +1,23 @@
+---
+# Launch a RHEL6 instance and collect the base volume
+
+- name: Launch the target instance in the temporary VPN
+  community.aws.ec2_instance:
+    aws_access_key: "{{ inject.aws_access_key | default(omit) }}"
+    aws_secret_key: "{{ inject.aws_secret_key | default(omit) }}"
+    profile: "{{ inject.profile | default(omit) }}"
+    region: "{{ inject.region | default(omit) }}"
+    tags: "{{ inject.tags | combine({'els_state':'incomplete', 'instance) }}"
+    instance_type: "{{ donor_instance_instance_type | default('t2.large') }}"
+    vpc_subnet_id: "{{ rhel_6_els_vpc_subnet.id }}"
+    image_id: "{{ rhel_6_els_ami.image_id }}"
+    key_name: rhel-6-els-temp-key
+    security_group: rhel_6_els_group
+    name: target_instance
+    network:
+      assign_public_ip: "{{ inject.target.assign_public_ip | default(true) }}"
+    filters:
+      tag:Name: target_instance
+      instance-state-name: running
+  register: target_instance
+  delegate_to: 127.0.0.1
