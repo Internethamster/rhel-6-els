@@ -26,7 +26,7 @@
   amazon.aws.ec2_vol_info:
     aws_access_key: "{{ inject.aws_access_key | default(omit) }}"
     aws_secret_key: "{{ inject.aws_secret_key | default(omit) }}"
-    profile: "{{ inject.profile | defualt(omit) }}"
+    profile: "{{ inject.profile | default(omit) }}"
     region: "{{ inject.region | default(omit) }}"
     filters:
       attachment.instance-id: "{{ donor_instance_id }}"
@@ -43,7 +43,7 @@
     volume_id: "{{ donor_instance_root_volume_info.volumes[0].id }}"
     last_snapshot_min_age: 120
     description: "Snapshot one destined for rhel-6-els from {{ donor_instance_id }}"
-    snapshot_tags: "{{ aws_inject.tags | combine({ 'els_status': 'active', 'els_stage':'one'}) }}"
+    snapshot_tags: "{{ inject.tags | combine({ 'els_status': 'active', 'els_stage':'one'}) }}"
     wait: yes
   delegate_to: 127.0.0.1
   register: donor_snapshot
@@ -51,7 +51,8 @@
 - name: "Create donor volume for copy {{ donor_instance_id }}"
   amazon.aws.ec2_vol:
     encrypted: yes
-    tags: "{{ aws_inject.tags | combine({ 'els_status': 'active', 'els_stage':'one' }) }}"
+    tags: "{{ inject.tags | combine({ 'els_status': 'active', 'els_stage':'one' }) }}"
+    region: "{{ donor_instance_az[:-1] }}" 
     snapshot: "{{ donor_snapshot.snapshot_id }}"
     availability_zone: "{{ donor_instance_az }}"
   register: donor_volume

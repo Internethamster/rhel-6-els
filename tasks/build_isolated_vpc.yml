@@ -28,25 +28,25 @@
 
 - name: VPC | build an isolated environment for the instance
   amazon.aws.ec2_vpc_net:
-    aws_access_key: "{{ inject.aws_access_key }}"
-    aws_secret_key: "{{ inject.aws_secret_key }}"
-    profile: "{{ inject.profile }}"
-    region: "{{ inject.region }}"
+    aws_access_key: "{{ inject.aws_access_key | default(omit) }}"
+    aws_secret_key: "{{ inject.aws_secret_key | default(omit) }}"
+    profile: "{{ inject.profile | default(omit) }}"
+    region: "{{ inject.region | default(omit) }}"
     cidr_block: 10.0.0.0/16 # network is arbritary
     name: AWS_RHEL_CONVERT
-    tags: "{{ aws_inject.tags }}"
+    tags: "{{ inject.tags }}"
   register: rhel_6_els_vpc
+  delegate_to: 127.0.0.1
 
-- name: "VPC | build a subnet in {{ rhel_6_els_vpc.id }}"
+- name: "VPC | build a subnet in {{ rhel_6_els_vpc.vpc.id }}"
   amazon.aws.ec2_vpc_subnet:
     aws_access_key: "{{ inject.aws_access_key | default(omit) }}"
     aws_secret_key: "{{ inject.aws_secret_key | default(omit) }}"
     profile: "{{ inject.profile | default(omit) }}"
     region:  "{{ inject.region | default(omit) }}"
     tags: "{{ inject.tags | combine({'rhel_6_els_task':'incomplete'}) }}"
-    az: "{{ rhel6_instance_az }}"
-    vpc_id: "{{ rhel_6_els_vpc.id }}"
-    map_public_ip_on_launch: yes
+    az: "{{ donor_instance_az }}"
+    vpc_id: "{{ rhel_6_els_vpc.vpc.id }}"
     cidr: 10.0.0.0/24
   delegate_to: 127.0.0.1
   register: rhel_6_els_vpc_subnet
@@ -60,7 +60,7 @@
     profile: "{{ inject.profile | default(omit) }}"
     region:  "{{ inject.region | default(omit) }}"
     tags: "{{ inject.tags }}"
-    vpc_id: "{{ rhel_6_els_vpc.id }}"
+    vpc_id: "{{ rhel_6_els_vpc.vpc.id }}"
   delegate_to: 127.0.0.1
   register: rhel_6_els_vpc_igw
 
@@ -71,7 +71,7 @@
     profile: "{{ inject.profile | default(omit) }}"
     region:  "{{ inject.region | default(omit) }}"
     tags: "{{ inject.tags }}"
-    vpc_id: "{{ rhel_6_els_vpc.id }}"
+    vpc_id: "{{ rhel_6_els_vpc.vpc.id }}"
     routes:
       - dest: 0.0.0.0/0
         gateway_id: "{{ rhel_6_els_vpc_igw.gateway_id }}"
@@ -86,14 +86,14 @@
     region:  "{{ inject.region | default(omit) }}"
     tags: "{{ inject.tags }}"
     name: rhel_6_els_group
-    vpc_id: "{{ rhel_6_els_vpc.id }}"
+    description: Allow SSH to instances assigned
+    vpc_id: "{{ rhel_6_els_vpc.vpc.id }}"
     rules:
       - proto: tcp
         ports:
         - 22
         cidr_ip: "{{ rhel_6_cidr_ip | default('0.0.0.0/0') }}"
         # This value can be modified to constrain access.
-    rule_desc: "add SSH access to surrogate"
   delegate_to: 127.0.0.1
   register: rhel_6_els_vpc_sg
 
@@ -110,7 +110,6 @@
   register: rhel_6_els_temp_key
   notify:
     - save the private key to tmp for use later
-    - report on key
 
 - name: debug output on the key detail
   ansible.builtin.debug:
