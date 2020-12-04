@@ -5,7 +5,7 @@
   gather_facts: false
   no_log: "{{ molecule_no_log }}"
   vars:
-    ssh_user: ubuntu
+    ssh_user: ec2-user
     ssh_port: 22
 
     security_group_name: molecule
@@ -30,12 +30,16 @@
   tasks:
     - name: Find the vpc for the subnet
       ec2_vpc_subnet_info:
+        region: "{{ item.region | default(omit) }}"
+        profile: "{{ item.profile | default(omit) }}"
         subnet_ids: "{{ item.vpc_subnet_id }}"
       loop: "{{ molecule_yml.platforms }}"
       register: subnet_info
 
     - name: Create security groups
       ec2_group:
+        region: "{{ item.region | default(omit) }}"
+        profile: "{{ item.profile | default(omit) }}"
         vpc_id: "{{ item.subnets[0].vpc_id }}"
         name: "{{ security_group_name }}"
         description: "{{ security_group_name }}"
@@ -50,12 +54,16 @@
 
     - name: Delete remote key pair
       ec2_key:
+        region: "{{ item.region | default(omit) }}"
+        profile: "{{ item.profile | default(omit) }}"
         name: "{{ key_pair_name }}"
         state: absent
       when: not key_pair_local.stat.exists
 
     - name: Create key pair
       ec2_key:
+        region: "{{ item.region | default(omit) }}"
+        profile: "{{ item.profile | default(omit) }}"
         name: "{{ key_pair_name }}"
       register: key_pair
 
@@ -69,14 +77,19 @@
     - name: Get the ec2 ami(s) by owner and name, if image not set
       ec2_ami_info:
         owners: "{{ item.image_owner }}"
+        region: "{{ item.region | default(omit) }}"
+        profile: "{{ item.profile | default(omit) }}"
         filters:
           name: "{{ item.image_name }}"
+        region: "{{ item.test_region | default(omit)}}"
       loop: "{{ molecule_yml.platforms }}"
       when: item.image is not defined
       register: ami_info
 
     - name: Create molecule instance(s)
       ec2:
+        region: "{{ item.region | default(omit) }}"
+        profile: "{{ item.profile | default(omit) }}"
         key_name: "{{ key_pair_name }}"
         image: "{{ item.image
           if item.image is defined
