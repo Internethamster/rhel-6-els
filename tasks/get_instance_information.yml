@@ -30,17 +30,18 @@
 
 - name: VPC | Gather the details related to the instance
   ansible.builtin.set_fact:
-    donor_instance_az: "{{ donor_instances_info.instances[0].placement.availability_zone }}"
-    donor_instance_key: "{{ donor_instances_info.instances[0].key_name }}"
-    donor_instance_ip_address: "{{ donor_instances_info.instances[0].private_ip_address }}"
-    donor_instance_subnet_id: "{{ donor_instances_info.instances[0].subnet_id }}"
-    donor_instance_security_groups: "{{ donor_instances_info.instances[0].security_groups }}"
-    donor_instance_tags: "{{ donor_instances_info.instances[0].tags }}"
-    donor_instance_id: "{{ donor_instances_info.instances[0].instance_id }}"
-    donor_instance_type: "{{ donor_instances_info.instances[0].instance_type }}"
+    donor_instance_az: "{{ item.1.placement.availability_zone }}"
+    donor_instance_key: "{{ item.1.key_name }}"
+    donor_instance_ip_address: "{{ item.1.private_ip_address }}"
+    donor_instance_subnet_id: "{{ item.1.subnet_id }}"
+    donor_instance_security_groups: "{{ item.1.security_groups }}"
+    donor_instance_tags: "{{ item.1.tags }}"
+    donor_instance_id: "{{ item.1.instance_id }}"
+    donor_instance_type: "{{ item.1.instance_type }}"
     donor_instance_block_device_mappings: >-
-      {{ donor_instances_info.instances[0].block_device_mappings }}
+      {{ item.1.block_device_mappings }}
     donor_instance_root_volume_id: >-
-        {{ donor_instances_info.instances[0].block_device_mappings | community.general.json_query('[?device_name == `/dev/sda1`].ebs.volume_id | [-1]') }}
+        {{ item.1.block_device_mappings | community.general.json_query('[?device_name == `/dev/sda1`].ebs.volume_id | [-1]') }}
     donor_instance_root_volume_device_name: >-
-        {{ donor_instances_info.instances[0].block_device_mappings | community.general.json_query('[?device_name == `/dev/sda1`].device_name | [-1]') }}
+        {{ item.1.block_device_mappings | community.general.json_query('[?device_name == `/dev/sda1`].device_name | [-1]') }}
+  with_indexed_items: "{{ donor_instances_info.instances }}"
