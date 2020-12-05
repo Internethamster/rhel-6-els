@@ -8,8 +8,9 @@ rhel6_instance_tag_value: donor
 rhel6_els_instance_tag_name: migration_task_els
 rhel6_els_instance_tag_value: target
 
-aws_inject:
-  region: "{{ region | default(omit)}}"
+inject:
+  region: "{{ region | default(omit) }}"
+  profile: "{{ profile | default(omit) }}"
   tags:
     task: rhel_6_els_conversion
     state: incomplete
