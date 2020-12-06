@@ -36,6 +36,7 @@
     name: AWS_RHEL_CONVERT
     tags: "{{ inject.tags }}"
   register: rhel_6_els_vpc
+  run_once: True
   delegate_to: 127.0.0.1
 
 - name: "VPC | build a subnet in {{ rhel_6_els_vpc.vpc.id }}"
@@ -49,7 +50,9 @@
     vpc_id: "{{ rhel_6_els_vpc.vpc.id }}"
     cidr: 10.0.0.0/24
   delegate_to: 127.0.0.1
+  run_once: True
   register: rhel_6_els_vpc_subnet
+  
   # Set the location of the instance for the copy.
   # This is an isolated vpc and an isolated subnet
   # with an internet gateway and access from only the ansible host.
@@ -62,6 +65,7 @@
     tags: "{{ inject.tags }}"
     vpc_id: "{{ rhel_6_els_vpc.vpc.id }}"
   delegate_to: 127.0.0.1
+  run_once: True
   register: rhel_6_els_vpc_igw
 
 - name: add route table for instance management
@@ -76,6 +80,7 @@
       - dest: 0.0.0.0/0
         gateway_id: "{{ rhel_6_els_vpc_igw.gateway_id }}"
   delegate_to: 127.0.0.1
+  run_once: True
   register: rhel_6_els_vpc_route_table
 
 - name: add security group with access from the ansible host
@@ -95,8 +100,30 @@
         cidr_ip: "{{ rhel_6_cidr_ip | default('0.0.0.0/0') }}"
         # This value can be modified to constrain access.
   delegate_to: 127.0.0.1
+  run_once: True
   register: rhel_6_els_vpc_sg
 
+
+- name: If there is no private key file, you need to remove any existing key
+  ansible.builtin.stat:
+    path: /tmp/rhel_6_els_temp_key.pem
+  register: temp_key_pem
+  delegate_to: 127.0.0.1
+  delegate_facts: true
+  run_once: true
+
+- name: remove the existing key pair for temporary use with the builder instance
+  amazon.aws.ec2_key:
+    aws_access_key: "{{ inject.aws_access_key | default(omit) }}"
+    aws_secret_key: "{{ inject.aws_secret_key | default(omit) }}"
+    profile: "{{ inject.profile | default(omit) }}"
+    region:  "{{ inject.region | default(omit) }}"
+    state: absent
+    name: rhel-6-els-temp-key
+  delegate_to: 127.0.0.1
+  delegate_facts: true
+  run_once: true
+  when: not temp_key_pem.stat.exists
 
 - name: create a new key pair for temporary use with the builder instance
   amazon.aws.ec2_key:
@@ -107,10 +134,9 @@
     name: rhel-6-els-temp-key
     wait: yes
   delegate_to: 127.0.0.1
+  delegate_facts: true
+  run_once: true
   register: rhel_6_els_temp_key
   notify:
     - save the private key to tmp for use later
 
-- name: debug output on the key detail
-  ansible.builtin.debug:
-    var: rhel_6_els_temp_key

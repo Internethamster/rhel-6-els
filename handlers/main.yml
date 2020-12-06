@@ -27,6 +27,7 @@
     mode: 0600
   when: rhel_6_els_temp_key.changed
   delegate_to: 127.0.0.1
+  delegate_facts: true
   notify: report on key
 
 - name: add donor volume sdf

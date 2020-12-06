@@ -48,15 +48,3 @@
   delegate_to: 127.0.0.1
   register: donor_snapshot
 
-- name: "Create donor volume for copy {{ donor_instance_id }}"
-  amazon.aws.ec2_vol:
-    encrypted: yes
-    tags: "{{ inject.tags | combine({ 'els_status': 'active', 'els_stage':'one' }) }}"
-    region: "{{ donor_instance_az[:-1] }}" 
-    snapshot: "{{ donor_snapshot.snapshot_id }}"
-    availability_zone: "{{ donor_instance_az }}"
-  register: donor_volume
-  delegate_to: 127.0.0.1
-  # At this point, there is an encrypted volume for content creation move to building the surrogate
-  # Surrogate instance should be defined based as els_surrogate_ami or it will be created
-  # using a current RHEL instance

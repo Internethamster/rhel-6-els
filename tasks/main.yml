@@ -33,11 +33,10 @@
 
 - name: Create a rhel-6-els target instance
   include_tasks: launch_rhel_6_els_instance.yml
-  debug:
-    msg: "-*- TODO -*- Create a rhel-6-els target instance "
-
+  
 - name: Create a surrogate instance
   include_tasks: initalize_surrogate_instance.yml
+  
 #   notify: set the instance id as a fact
 #     # (needed for stop/start action)
 #   notify: set the root_volume as a fact
