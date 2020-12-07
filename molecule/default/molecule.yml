@@ -7,7 +7,7 @@ platforms:
   - name: rhel-6-els-tester
     vpc_subnet_id: subnet-08b65873
     profile: ansible
-    region: us-east-2
+    region: us-east-1
 provisioner:
   name: ansible
 verifier:
