@@ -11,6 +11,7 @@ rhel6_els_instance_tag_value: target
 inject:
   region: "{{ region | default(omit) }}"
   profile: "{{ profile | default(omit) }}"
+  private_key_path: "{{ temp_key_path | default('/tmp/rhel_6_els_temp_key.pem') }}"
   tags:
     task: rhel_6_els_conversion
     state: incomplete
