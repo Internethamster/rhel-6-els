@@ -43,8 +43,20 @@
     volume_id: "{{ donor_instance_root_volume_info.volumes[0].id }}"
     last_snapshot_min_age: 120
     description: "Snapshot one destined for rhel-6-els from {{ donor_instance_id }}"
-    snapshot_tags: "{{ inject.tags | combine({ 'els_status': 'active', 'els_stage':'one'}) }}"
+    snapshot_tags: "{{ inject.tags | combine({ 'Name': donor_instance_id, 'els_status': 'active', 'els_stage':'one'}) }}"
     wait: yes
   delegate_to: 127.0.0.1
   register: donor_snapshot
+  async: 7200
+  poll: 0
+
+- name: Wait for the snapshot to complete
+  ansible.builtin.async_status:
+    jid: "{{ donor_snapshot.ansible_job_id }}"
+  register: ec2_job
+  until: ec2_job.finished
+  retries: 300
+  delay: 20
+  delegate_to: 127.0.0.1
+  delegate_facts: true
 

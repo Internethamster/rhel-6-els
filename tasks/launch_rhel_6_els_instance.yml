@@ -13,14 +13,27 @@
     image_id: "{{ rhel_6_els_ami.image_id }}"
     key_name: rhel-6-els-temp-key
     security_group: rhel_6_els_group
-    name: target_instance
+    name: "target-{{ donor_instance_id }}"
     network:
       assign_public_ip: "{{ inject.target.assign_public_ip | default(true) }}"
     filters:
-      tag:Name: target_instance
+      tag:Name: "target-{{ donor_instance_id }}"
       instance-state-name: running
-  register: target_instance
+  register: target_instances
   delegate_to: 127.0.0.1
+  delegate_facts: true
+  async: 7200
+  poll: 0
+
+- name: Wait for the target instance to complete 
+  ansible.builtin.async_status:
+    jid: "{{ target_instances.ansible_job_id }}"
+  register: ec2_job
+  until: ec2_job.finished
+  retries: 300
+  delay: 20
+  delegate_to: 127.0.0.1
+  delegate_facts: true
 
 - name: add to hostgroup for targets
   add_host:
@@ -28,7 +41,7 @@
     groups:
       - targets
       - incomplete
-      - "{{ item.1.instance_id }}"
+      - "{{ item.1.instance_id | replace('-', '_') }}"
     vars:
       ansible_ssh_private_key_file: "/tmp/rhel_6_els_temp_key.pem"
-  with_indexed_items: "{{ target_instance.instances }}"
+  with_indexed_items: "{{ target_instances.instances }}"
